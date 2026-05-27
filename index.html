@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Customer Churn Prediction — Project Report (Telco Dataset)</title>
+  <style>
+    :root{
+      --bg:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --accent:#2563eb;
+      --accent2:#16a34a;
+      --card:#f9fafb;
+      --shadow: 0 1px 0 rgba(0,0,0,.04);
+    }
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      line-height:1.45;
+    }
+    .page{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 18px 60px;
+    }
+    header{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding: 18px 18px 16px;
+      background: linear-gradient(180deg, #ffffff, #fbfdff);
+      box-shadow: var(--shadow);
+    }
+    h1{
+      margin: 0 0 6px;
+      font-size: 28px;
+      letter-spacing: -0.02em;
+    }
+    .subtitle{
+      color:var(--muted);
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .meta{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .pill{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:13px;
+      background: #fff;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .section{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding: 16px;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+    h2{
+      font-size: 18px;
+      margin: 0 0 10px;
+      color:#0f172a;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    h2 .dot{
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+    }
+    h3{
+      font-size: 15px;
+      margin: 14px 0 6px;
+      color:#0f172a;
+    }
+    p{ margin: 8px 0; color:#111827;}
+    .muted{ color:var(--muted); }
+    .hr{
+      height:1px;
+      background:var(--line);
+      margin: 12px 0;
+    }
+    table{
+      width:100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    th, td{
+      border:1px solid var(--line);
+      padding: 8px 10px;
+      vertical-align: top;
+      text-align:left;
+    }
+    th{
+      background: #f3f4f6;
+      font-weight: 650;
+    }
+    .two-col{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .card{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding: 12px;
+      background: var(--card);
+    }
+
+    .figure{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding: 10px;
+      background: #fff;
+      page-break-inside: avoid;
+    }
+    .figure img{
+      width:100%;
+      height:auto;
+      border-radius:10px;
+      display:block;
+      background:#fff;
+    }
+    .figcap{
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .tag{
+      display:inline-block;
+      padding: 4px 9px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#fff;
+      font-size: 12px;
+      color:#0f172a;
+    }
+    .kpi{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .kpi .box{
+      flex: 1 1 220px;
+      border:1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      background: #fff;
+    }
+    .kpi .label{ color:var(--muted); font-size: 12.5px; }
+    .kpi .value{ font-size: 20px; font-weight: 750; margin-top: 6px; }
+    .small{
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    /* Print styles */
+    @media print{
+      body{ background:#fff; }
+      header, .section{ box-shadow:none; }
+      .page{ padding: 0 8px; }
+      .no-print{ display:none !important; }
+      a{ color: inherit; text-decoration:none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Customer Churn Prediction — Telco Customer Churn ML Project</h1>
+      <div class="subtitle">
+        End-to-end pipeline report covering data preparation, model training, evaluation, tuning, and interpretation.
+      </div>
+      <div class="meta">
+        <div class="pill"><strong>Dataset:</strong> Telco Customer Churn (WA_Fn-UseC_-Telco-Customer-Churn.csv)</div>
+        <div class="pill"><strong>Target:</strong> Churn (Yes/No → 1/0)</div>
+        <div class="pill"><strong>Team:</strong> Keshav Gupta, Mudassir Iftikhar</div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="section" id="overview">
+        <h2><span class="dot"></span>1. Project overview</h2>
+        <p>
+          The goal of this project is to predict whether a customer will churn using historical customer information.
+          The workflow is organized as modular stages so that each step can be understood, inspected, and reproduced.
+        </p>
+        <div class="hr"></div>
+        <div class="two-col">
+          <div class="card">
+            <h3>Pipeline stages implemented</h3>
+            <ul style="margin:6px 0 0 18px;">
+              <li>Load raw data and inspect structure</li>
+              <li>Preprocess (type fixes, missing handling, target encoding, column dropping)</li>
+              <li>Exploratory Data Analysis (EDA plots)</li>
+              <li>Feature engineering (feature split, preprocessing transformer, scaling/imputation, optional SMOTE)</li>
+              <li>Train multiple models</li>
+              <li>Evaluate models (ROC curves, confusion matrices, metrics summary)</li>
+              <li>Hyperparameter tuning for selected models</li>
+              <li>Feature importance and SHAP-based interpretation for tree models</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Models used in the project</h3>
+            <ul style="margin:6px 0 0 18px;">
+              <li>Logistic Regression</li>
+              <li>Decision Tree</li>
+              <li>Random Forest</li>
+              <li>XGBoost</li>
+              <li>LightGBM</li>
+            </ul>
+            <p class="small">
+              XGBoost/LightGBM are included when their libraries are available; the code handles missing dependencies gracefully.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="data-prep">
+        <h2><span class="dot"></span>2. Data loading & initial inspection</h2>
+        <p>
+          The loader reads the dataset from <span class="tag">data/raw/</span> and prints:
+          shape (rows × columns), memory usage, data types, missing values, first rows preview, and the raw churn class distribution.
+        </p>
+        <h3>What was observed (from your notebook run)</h3>
+        <ul style="margin:8px 0 0 18px;">
+          <li><strong>Shape:</strong> 7,043 rows × 21 columns</li>
+          <li><strong>Target distribution (raw):</strong> No churn = 5,174 (73.5%), Churn = 1,869 (26.5%)</li>
+          <li><strong>Note:</strong> <em>TotalCharges</em> is initially a string column and typically contains whitespace blanks; the project handles this during preprocessing.</li>
+          <li><strong>Missing values:</strong> No null values appeared directly in the CSV read, but <em>TotalCharges</em> required cleaning because blanks become NaN only after numeric coercion.</li>
+        </ul>
+      </section>
+
+      <section class="section" id="preprocessing">
+        <h2><span class="dot"></span>3. Preprocessing (cleaning & target encoding)</h2>
+
+        <h3>Preprocessing operations</h3>
+        <ol style="margin:8px 0 0 18px;">
+          <li><strong>TotalCharges numeric fix</strong>:
+            <ul>
+              <li>The project coerces <em>TotalCharges</em> to numeric using <code>errors="coerce"</code>, which converts whitespace/invalid entries into NaN.</li>
+            </ul>
+          </li>
+          <li><strong>Missing handling</strong>:
+            <ul>
+              <li>For numeric-coerced columns (including <em>TotalCharges</em>), NaN values are imputed with the <strong>median</strong>.</li>
+            </ul>
+          </li>
+          <li><strong>Target encoding</strong>:
+            <ul>
+              <li><em>Churn</em> is converted from <code>"Yes"/"No"</code> to binary <code>1/0</code>.</li>
+            </ul>
+          </li>
+          <li><strong>Drop unnecessary column</strong>:
+            <ul>
+              <li><code>customerID</code> is removed because it is an identifier and not a predictive feature.</li>
+            </ul>
+          </li>
+        </ol>
+
+        <h3>Result from your notebook output</h3>
+        <div class="kpi" style="margin-top:8px;">
+          <div class="box">
+            <div class="label">Remaining null values after preprocessing</div>
+            <div class="value">0</div>
+          </div>
+          <div class="box">
+            <div class="label">Final cleaned shape</div>
+            <div class="value">7,043 × 20</div>
+          </div>
+          <div class="box">
+            <div class="label">Target balance (Churn=1)</div>
+            <div class="value">1,869 (26.5%)</div>
+          </div>
+        </div>
+
+        <p>
+          The cleaned dataset is saved as <span class="tag">data/processed/telco_processed.csv</span>.
+        </p>
+      </section>
+
+      <section class="section" id="eda">
+        <h2><span class="dot"></span>4. Exploratory Data Analysis (EDA graphs)</h2>
+        <p>
+          After preprocessing, the project generates a set of EDA plots to understand the target distribution,
+          feature distributions, churn rates across categorical features, numeric feature separation, and
+          correlations among numeric attributes.
+        </p>
+
+        <div class="hr"></div>
+
+        <h3>EDA Graphs generated</h3>
+        <div class="two-col">
+          <div class="figure">
+            <img alt="churn_distribution" src="outputs/figures/churn_distribution.png" />
+            <div class="figcap">
+              <strong>churn_distribution.png</strong><br/>
+              Shows churn class balance as bar + pie chart.
+              This confirms churn is imbalanced (approx. 26.5% churn, 73.5% no churn).
+            </div>
+          </div>
+
+          <div class="figure">
+            <img alt="numeric_distributions" src="outputs/figures/numeric_distributions.png" />
+            <div class="figcap">
+              <strong>numeric_distributions.png</strong><br/>
+              Histograms for numeric columns with separate overlays for churn vs non-churn.
+              Helps identify numeric attributes that shift between churn classes.
+            </div>
+          </div>
+
+          <div class="figure">
+            <img alt="churn_by_categorical" src="outputs/figures/churn_by_categorical.png" />
+            <div class="figcap">
+              <strong>churn_by_categorical.png</strong><br/>
+              Churn rate per categorical feature, showing which categories have higher churn propensity.
+            </div>
+          </div>
+
+          <div class="figure">
+            <img alt="churn_by_numeric" src="outputs/figures/churn_by_numeric.png" />
+            <div class="figcap">
+              <strong>churn_by_numeric.png</strong><br/>
+              Boxplots of numeric features grouped by churn.
+              This visualizes how distributions differ between churners and non-churners.
+            </div>
+          </div>
+
+          <div class="figure" style="grid-column:1 / -1;">
+            <img alt="correlation_heatmap" src="outputs/figures/correlation_heatmap.png" />
+            <div class="figcap">
+              <strong>correlation_heatmap.png</strong><br/>
+              Pearson correlation among numeric features.
+              Useful for spotting strong linear relationships between continuous variables.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="feature-engineering">
+        <h2><span class="dot"></span>5. Feature engineering & model-ready dataset</h2>
+
+        <h3>How features were prepared</h3>
+        <ol style="margin:8px 0 0 18px;">
+          <li>
+            <strong>Split into X and y</strong>:
+            <ul>
+              <li><code>X</code> = all columns except <code>Churn</code></li>
+              <li><code>y</code> = <code>Churn</code> (0/1)</li>
+            </ul>
+          </li>
+          <li>
+            <strong>Train-test split</strong>:
+            <ul>
+              <li>Test size: 20%</li>
+              <li>Stratified by churn label to keep churn distribution consistent across splits</li>
+            </ul>
+          </li>
+          <li>
+            <strong>Preprocessing transformer</strong> using <code>ColumnTransformer</code>:
+            <ul>
+              <li><strong>Numeric columns</strong>:
+                <ul>
+                  <li>Median imputation</li>
+                  <li>Standard scaling</li>
+                </ul>
+              </li>
+              <li><strong>Categorical columns</strong>:
+                <ul>
+                  <li>Most-frequent imputation</li>
+                  <li>Ordinal encoding with unknown-value handling</li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <strong>Optional SMOTE</strong>:
+            <ul>
+              <li>Because churn is imbalanced, SMOTE is applied only to the training set to balance the minority class.</li>
+              <li>This improves model learning on churn patterns without contaminating test distribution.</li>
+            </ul>
+          </li>
+        </ol>
+
+        <h3>Feature names</h3>
+        <p>
+          For interpretation, the project tracks the original feature columns (numeric + categorical) prior to transformation.
+          These names are used later when generating feature importance and SHAP plots.
+        </p>
+      </section>
+
+      <section class="section" id="training">
+        <h2><span class="dot"></span>6. Model training (and saved artifacts)</h2>
+        <p>
+          The training stage fits five models and saves each trained estimator to <span class="tag">outputs/models/</span> as a
+          <code>.joblib</code> file:
+        </p>
+
+        <table aria-label="trained models">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Library</th>
+              <th>Training behavior in this project</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>LogisticRegression</td>
+              <td>scikit-learn</td>
+              <td>Balanced class weight + scaled numeric + ordinal encoded categoricals</td>
+            </tr>
+            <tr>
+              <td>DecisionTree</td>
+              <td>scikit-learn</td>
+              <td>Max depth set to prevent overly deep trees; class_weight balanced</td>
+            </tr>
+            <tr>
+              <td>RandomForest</td>
+              <td>scikit-learn</td>
+              <td>Ensemble approach with class_weight balanced</td>
+            </tr>
+            <tr>
+              <td>XGBoost</td>
+              <td>xgboost</td>
+              <td>Gradient boosting with logloss eval metric</td>
+            </tr>
+            <tr>
+              <td>LightGBM</td>
+              <td>lightgbm</td>
+              <td>Gradient boosting optimized for speed; balanced class weighting</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p class="small">
+          In your run, SHAP and plots for RandomForest, XGBoost, and LightGBM were successfully generated, which confirms the models trained correctly.
+        </p>
+      </section>
+
+      <section class="section" id="evaluation">
+        <h2><span class="dot"></span>7. Evaluation results (metrics, ROC, confusion matrices)</h2>
+
+        <h3>Key metrics summary (from your metrics_summary.csv)</h3>
+        <table aria-label="metrics summary">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Accuracy</th>
+              <th>Precision</th>
+              <th>Recall</th>
+              <th>F1-Score</th>
+              <th>ROC-AUC</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>XGBoost</strong></td>
+              <td>0.7807</td>
+              <td>0.5831</td>
+              <td>0.6096</td>
+              <td>0.5961</td>
+              <td><strong>0.8338</strong></td>
+            </tr>
+            <tr>
+              <td><strong>LightGBM</strong></td>
+              <td>0.7821</td>
+              <td>0.5857</td>
+              <td>0.6123</td>
+              <td>0.5987</td>
+              <td>0.8332</td>
+            </tr>
+            <tr>
+              <td>RandomForest</td>
+              <td>0.7743</td>
+              <td>0.5749</td>
+              <td>0.5749</td>
+              <td>0.5749</td>
+              <td>0.8240</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="hr"></div>
+
+        <h3>How evaluation plots were produced</h3>
+        <ul style="margin:8px 0 0 18px;">
+          <li><strong>Confusion matrix</strong> is plotted for each model.</li>
+          <li><strong>ROC curves</strong> are plotted for all models together.</li>
+          <li><strong>Classification reports</strong> are written into <span class="tag">outputs/reports/</span>.</li>
+          <li><strong>Metrics summary CSV</strong> is saved in <span class="tag">outputs/metrics/</span>.</li>
+        </ul>
+
+        <h3>Confusion matrix graphs (per model)</h3>
+        <div class="two-col">
+          <div class="figure">
+            <img alt="cm_LogisticRegression" src="outputs/figures/cm_LogisticRegression.png" />
+            <div class="figcap"><strong>cm_LogisticRegression.png</strong><br/>Confusion matrix for Logistic Regression.</div>
+          </div>
+          <div class="figure">
+            <img alt="cm_DecisionTree" src="outputs/figures/cm_DecisionTree.png" />
+            <div class="figcap"><strong>cm_DecisionTree.png</strong><br/>Confusion matrix for Decision Tree.</div>
+          </div>
+          <div class="figure">
+            <img alt="cm_RandomForest" src="outputs/figures/cm_RandomForest.png" />
+            <div class="figcap"><strong>cm_RandomForest.png</strong><br/>Confusion matrix for Random Forest.</div>
+          </div>
+          <div class="figure">
+            <img alt="cm_XGBoost" src="outputs/figures/cm_XGBoost.png" />
+            <div class="figcap"><strong>cm_XGBoost.png</strong><br/>Confusion matrix for XGBoost.</div>
+          </div>
+          <div class="figure" style="grid-column:1 / -1;">
+            <img alt="cm_LightGBM" src="outputs/figures/cm_LightGBM.png" />
+            <div class="figcap"><strong>cm_LightGBM.png</strong><br/>Confusion matrix for LightGBM.</div>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <h3>ROC curves (all models combined)</h3>
+        <div class="figure">
+          <img alt="roc_curves_all_models" src="outputs/figures/roc_curves_all_models.png" />
+          <div class="figcap">
+            <strong>roc_curves_all_models.png</strong><br/>
+            Shows how each model balances false positives and true positives across thresholds.
+            The model with the highest ROC-AUC is treated as best in ranking.
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="tuning">
+        <h2><span class="dot"></span>8. Hyperparameter tuning (GridSearchCV)</h2>
+        <p>
+          After the initial training and evaluation, the project performs hyperparameter tuning for:
+          Random Forest, XGBoost, and LightGBM.
+          The tuning uses grid search with stratified cross-validation (ROC-AUC scoring).
+        </p>
+
+        <div class="two-col">
+          <div class="card">
+            <h3>Tuning configuration</h3>
+            <ul style="margin:8px 0 0 18px;">
+              <li>Cross-validation folds: 5</li>
+              <li>Scoring metric: roc_auc</li>
+              <li>Refit enabled (best model refit on full training data)</li>
+              <li>Best estimators saved as <code>*_tuned.joblib</code></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Selected tuning grids (from config)</h3>
+            <ul style="margin:8px 0 0 18px;">
+              <li><strong>RandomForest:</strong> n_estimators {100,200,300}, max_depth {None,10,20}, min_samples_split {2,5,10}</li>
+              <li><strong>XGBoost:</strong> n_estimators {100,200}, max_depth {3,5,7}, learning_rate {0.05,0.1,0.2}, subsample {0.8,1.0}</li>
+              <li><strong>LightGBM:</strong> n_estimators {100,200}, max_depth {5,10,-1}, learning_rate {0.05,0.1}, num_leaves {31,63}</li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="small">
+          Note: Tuning is optional in the sense that the pipeline proceeds to evaluation and interpretation for the trained (non-tuned) models as well.
+          If tuned models exist, the pipeline evaluates them and ranks by ROC-AUC.
+        </p>
+      </section>
+
+      <section class="section" id="interpretation">
+        <h2><span class="dot"></span>9. Feature importance & SHAP interpretation</h2>
+        <p>
+          The project provides model interpretability focusing on tree-based models where SHAP is practical and meaningful:
+          Random Forest, XGBoost, and LightGBM.
+        </p>
+
+        <h3>What was generated for tree models</h3>
+        <ul style="margin:8px 0 0 18px;">
+          <li><strong>Built-in feature importances</strong> (bar chart) when the model exposes <code>feature_importances_</code>.</li>
+          <li><strong>SHAP summary plot</strong> (beeswarm-style) showing direction and distribution of SHAP values.</li>
+          <li><strong>SHAP bar plot</strong> (mean absolute SHAP) indicating which features contribute most overall.</li>
+        </ul>
+
+        <div class="hr"></div>
+
+        <h3>Random Forest interpretation outputs</h3>
+        <div class="two-col">
+          <div class="figure">
+            <img alt="feature_importance_RandomForest" src="outputs/figures/feature_importance_RandomForest.png" />
+            <div class="figcap"><strong>feature_importance_RandomForest.png</strong><br/>Top features by impurity-based importance.</div>
+          </div>
+          <div class="figure">
+            <img alt="shap_summary_RandomForest" src="outputs/figures/shap_summary_RandomForest.png" />
+            <div class="figcap"><strong>shap_summary_RandomForest.png</strong><br/>SHAP summary (beeswarm) for Random Forest.</div>
+          </div>
+        </div>
+
+        <h3>XGBoost interpretation outputs</h3>
+        <div class="two-col">
+          <div class="figure">
+            <img alt="feature_importance_XGBoost" src="outputs/figures/feature_importance_XGBoost.png" />
+            <div class="figcap"><strong>feature_importance_XGBoost.png</strong><br/>Top features according to XGBoost’s feature importance.</div>
+          </div>
+          <div class="figure">
+            <img alt="shap_summary_XGBoost" src="outputs/figures/shap_summary_XGBoost.png" />
+            <div class="figcap"><strong>shap_summary_XGBoost.png</strong><br/>SHAP summary for XGBoost.</div>
+          </div>
+        </div>
+
+        <h3>LightGBM interpretation outputs</h3>
+        <div class="two-col">
+          <div class="figure">
+            <img alt="feature_importance_LightGBM" src="outputs/figures/feature_importance_LightGBM.png" />
+            <div class="figcap"><strong>feature_importance_LightGBM.png</strong><br/>Top features by LightGBM feature importance.</div>
+          </div>
+          <div class="figure">
+            <img alt="shap_summary_LightGBM" src="outputs/figures/shap_summary_LightGBM.png" />
+            <div class="figcap"><strong>shap_summary_LightGBM.png</strong><br/>SHAP summary for LightGBM.</div>
+          </div>
+        </div>
+
+        <p class="small">
+          Interpretation note: In the SHAP summary plots, each dot corresponds to a single sample-feature contribution.
+          More widespread dots indicate that a feature’s impact varies more across customers.
+        </p>
+      </section>
+
+      <section class="section" id="artifacts">
+        <h2><span class="dot"></span>10. Outputs produced by the project</h2>
+
+        <div class="two-col">
+          <div class="card">
+            <h3>outputs/figures/</h3>
+            <ul style="margin:8px 0 0 18px;">
+              <li>EDA: churn_distribution.png, numeric_distributions.png, churn_by_categorical.png, churn_by_numeric.png, correlation_heatmap.png</li>
+              <li>Evaluation: roc_curves_all_models.png</li>
+              <li>Confusion matrices: cm_LogisticRegression.png, cm_DecisionTree.png, cm_RandomForest.png, cm_XGBoost.png, cm_LightGBM.png</li>
+              <li>Interpretation: feature_importance_*.png, shap_summary_*.png (tree models)</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>outputs/models/</h3>
+            <ul style="margin:8px 0 0 18px;">
+              <li>Trained models: LogisticRegression.joblib, DecisionTree.joblib, RandomForest.joblib, XGBoost.joblib, LightGBM.joblib (if available)</li>
+              <li>Tuned models: RandomForest_tuned.joblib, XGBoost_tuned.joblib, LightGBM_tuned.joblib (if tuning succeeds)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="two-col" style="margin-top:12px;">
+          <div class="card">
+            <h3>outputs/reports/</h3>
+            <ul style="margin:8px 0 0 18px;">
+              <li>Classification report per model: report_{model_name}.txt</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>outputs/metrics/</h3>
+            <ul style="margin:8px 0 0 18px;">
+              <li>metrics_summary.csv (sorted by ROC-AUC)</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="conclusion">
+        <h2><span class="dot"></span>11. Conclusion & final selection</h2>
+        <p>
+          Based on the ROC-AUC ranking from <code>outputs/metrics/metrics_summary.csv</code>, the top-performing models are:
+        </p>
+
+        <div class="kpi" style="margin-top:8px;">
+          <div class="box">
+            <div class="label">Best model by ROC-AUC</div>
+            <div class="value">XGBoost (0.8338)</div>
+            <div class="small">Accuracy: 0.7807 • Precision: 0.5831 • Recall: 0.6096 • F1: 0.5961</div>
+          </div>
+          <div class="box">
+            <div class="label">Very close runner-up</div>
+            <div class="value">LightGBM (0.8332)</div>
+            <div class="small">Accuracy: 0.7821 • Precision: 0.5857 • Recall: 0.6123 • F1: 0.5987</div>
+          </div>
+        </div>
+
+        <p>
+          Both XGBoost and LightGBM perform strongly for this dataset, which is consistent with their gradient-boosting nature.
+          RandomForest performs slightly lower in ROC-AUC (0.8240), but still provides a solid baseline.
+        </p>
+
+        <div class="hr"></div>
+        <p class="muted">
+          Team Members: <strong>Keshav Gupta</strong>, <strong>Mudassir Iftikhar</strong>
+        </p>
+      </section>
+    </div>
+
+    <div class="small no-print" style="margin-top:14px;">
+      Tip: If you want this report to link to exact image files on disk, place this HTML in your project root and ensure the referenced
+      paths exist at <code>outputs/figures/</code>.
+    </div>
+  </div>
+</body>
+</html>
