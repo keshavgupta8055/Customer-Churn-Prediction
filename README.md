@@ -1,6 +1,8 @@
 # Customer Churn Prediction using Machine Learning
 
-A modular, production-style Python project that predicts customer churn from the Telco Customer Churn dataset using multiple ML models with full evaluation, tuning, and interpretation.
+A modular Python project that predicts customer churn from the Telco Customer Churn dataset using multiple ML models with full evaluation, tuning, and interpretation.
+
+This repository is now Python-first. The old static `index.html` landing page has been removed, and the project is driven entirely through `main.py` and the modules in `src/`.
 
 ---
 
@@ -99,6 +101,8 @@ This runs every stage in order:
 7. Hyperparameter tuning on best models
 8. Feature importance & SHAP analysis
 
+The notebook in `notebooks/exploration.ipynb` provides an interactive walkthrough of the same pipeline.
+
 ### Run individual stages
 
 Each `src/` file can also be run standalone:
@@ -114,6 +118,12 @@ python -m src.evaluate
 ```bash
 jupyter notebook notebooks/exploration.ipynb
 ```
+
+## Repository Notes
+
+- The repository is organized around reusable Python modules under `src/`.
+- Generated files in `data/processed/` and `outputs/` are kept out of version control, except for placeholder `.gitkeep` files.
+- The full pipeline can take several minutes because model tuning and SHAP explanations are included by default.
 
 ---
 
